@@ -1,37 +1,94 @@
-## Welcome to GitHub Pages
+## EV3 Project GitHub
 
-You can use the [editor on GitHub](https://github.com/nahyunmin/nahyunmin.github.io/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+## Code
 
-### Markdown
+```
+#pragma config(Sensor, S1, c1, sensorEV3_Color)
+#pragma config(Sensor, S2, c2, sensorEV3_Color)
+#pragma config(Motor,motorB,lm,tmotorEV3_Large, PIDControl, encoder)
+#pragma config(Motor,motorC,rm,tmotorEV3_Large, PIDControl, encoder)
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+int nMotorSpeedSetting = 55;
+int error = 0,sum=0,diff=0,last_error=0;
+float Kp=0.9,Kd=260,Ki=Kp*Kp/(4*Kd);
 
-```markdown
-Syntax highlighted code block
+int Bound1(){
+   int bound;
+   int black=0;
+   int white=0;
+   while(getButtonPress(buttonEnter)==0){ }
+      for(int i=0;i<5;i++){
+         white+=getColorReflected(c1);
+         sleep(10);
+         playTone(240,20);sleep(500);
+      }
+   while(getButtonPress(buttonEnter)==0){ }
+      for(int i=0;i<5;i++){
+         black+=getColorReflected(c1);
+         sleep(10);
+         playTone(240,20);sleep(500);
+      }
+   bound = (white/5 + black/5)/2;
+   return bound;
+}
 
-# Header 1
-## Header 2
-### Header 3
+void go(int bound)
+{
 
-- Bulleted
-- List
 
-1. Numbered
-2. List
+   error = getColorReflected(c1) - bound;
+   sum = sum + error;
+   diff = error - last_error;
+   setMotorSpeed(lm, nMotorSpeedSetting - (error*Kp+sum*Ki+diff*Kd));
+   setMotorSpeed(rm, nMotorSpeedSetting + (error*Kp+sum*Ki+diff*Kd));
+   last_error = error;
+}
 
-**Bold** and _Italic_ and `Code` text
+void stopMotor(){
+   setMotorSpeed(lm,0);
+   setMotorSpeed(rm,0);
+}
 
-[Link](url) and ![Image](src)
+
+task main()
+{
+    int bound = Bound1();
+   while(true)
+   {
+
+      go(bound);
+      if((getColorReflected(c1)<bound) && (getColorReflected(c2)<bound)){
+         setMotorSpeed(lm,10);
+         setMotorSpeed(rm,10);
+         sleep(850);
+         if((getColorReflected(c1)<bound) && (getColorReflected(c2)<bound)){
+            setMotorSpeed(lm,10);
+            setMotorSpeed(rm,10);
+            sleep(1500);
+            setMotorSpeed(lm,10);
+            setMotorSpeed(rm,-10);
+            sleep(2600);
+            setMotorSpeed(lm,-10);
+            setMotorSpeed(rm,10);
+            sleep(4800);
+               stopMotor();
+
+          }
+          break;
+       }
+   }
+   playTone(240,20);sleep(200);
+   stopMotor();
+
+
+}
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
+[EV3 작동영상](https://youtu.be/xTUUVcHlovE)
 
-### Jekyll Themes
+[중간발표](https://youtu.be/DopUDFiI_Tg)
 
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/nahyunmin/nahyunmin.github.io/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
+[최종발표_1](https://youtu.be/aAQp6w9G0Zw)
 
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+[최종발표_2](https://youtu.be/kH51Rj3uVHQ)
